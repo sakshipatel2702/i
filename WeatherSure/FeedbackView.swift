@@ -6,11 +6,17 @@
 //
 
 import SwiftUI
+import Firebase
+import FirebaseFirestore
 
 struct FeedbackView: View {
     @State private var name = ""
     @State private var email = ""
     @State private var feedback = ""
+    @State private var alertMessage = ""
+    @State private var isShowingAlert = false
+    
+    
     var body: some View {
         ZStack {
             Color(red: 0.902, green: 0.890, blue: 0.851)
@@ -59,7 +65,30 @@ struct FeedbackView: View {
                     .padding(.horizontal)
                 
                 Button("SUBMIT") {
-                    /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
+                    let db = Firestore.firestore()
+                       db.collection("feedback").addDocument(data: [
+                           "name": name,
+                           "email": email,
+                           "feedback": feedback
+                       ]) { error in
+                           if let error = error {
+                               alertMessage = "Error adding document: \(error.localizedDescription)"
+                           } else {
+                               alertMessage = "Feedback submitted successfully!"
+                               name = ""
+                               email = ""
+                               feedback = ""
+                           }
+                           isShowingAlert = true
+                       }
+                }
+                .alert(isPresented: $isShowingAlert) {
+                    Alert(
+                                        title: Text(alertMessage),
+                                        dismissButton: .default(Text("OK")) {
+                                            isShowingAlert = false
+                                        }
+                         )
                 }
                 .padding()
                 .background(Color.white)
